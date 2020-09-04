@@ -6,27 +6,20 @@ use DateTime;
 use Exception;
 use Faker\Factory;
 use Faker\Generator;
+use phpDocumentor\Reflection\DocBlockFactory;
 use ReflectionClass;
 use ReflectionProperty;
 use Spatie\DataTransferObject\DataTransferObject;
 use Spatie\DataTransferObject\DataTransferObjectCollection;
 
+/**
+ * This class makes it easy to mock your Data Transfer Objects.
+ * @author Aidan Casey <aidan.casey@anteris.com>
+ */
 class DataTransferObjectFactory
 {
     /** @var Generator An instance of faker for use throughout this class. */
     protected static Generator $faker;
-
-    /**
-     * Returns the instance of faker.
-     */
-    protected static function faker()
-    {
-        if (! isset(static::$faker)) {
-            static::$faker = Factory::create();
-        }
-
-        return static::$faker;
-    }
 
     /**
      * Creates a new DataTransferObject from its definition.
@@ -36,7 +29,7 @@ class DataTransferObjectFactory
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
-        if (! $reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObject) {
+        if (! static::isDTO($class)) {
             throw new Exception(
                 'Class must be an instance of Spatie\DataTransferObject\DataTransferObject!'
             );
@@ -44,11 +37,38 @@ class DataTransferObjectFactory
 
         $dtoParameters   = [];
         $classProperties = $reflectionClass->getProperties(ReflectionProperty::IS_PUBLIC);
+        $factory         = DocBlockFactory::createInstance();
 
         foreach ($classProperties as $property) {
             // Skip static properties
             if ($property->isStatic()) {
                 continue;
+            }
+
+            // Forgive the nested IF statements, but we wanna support docblocks!
+            if ($property->getDocComment()) {
+                $docblock   = $factory->create($property->getDocComment());
+                $var        = $docblock->getTagsByName('var');
+
+                if ($var) {
+                    $type = $var[0]->getType();
+
+                    if (static::isDTO($type)) {
+                        $dtoParameters[$property->getName()] = static::make( $type );
+                        continue;
+                    }
+
+                    if (static::isDTOCollection($type)) {
+                        $dtoType = static::getDTOCollectionReturnType($type);
+
+                        if (! $dtoType) {
+                            throw new Exception("Unable to determine return dto type of $type collection!");
+                        }
+
+                        $dtoParameters[$property->getName()] = static::makeCollection($dtoType, $type);
+                        continue;
+                    }
+                }
             }
 
             // If the property does not have a type, randomize it
@@ -87,7 +107,7 @@ class DataTransferObjectFactory
     ): DataTransferObjectCollection
     {
         // This step just ensures we are dealing with a DTO collection
-        if (! (new $dtoCollectionClass([])) instanceof DataTransferObjectCollection) {
+        if (! static::isDTOCollection($dtoCollectionClass)) {
             throw new Exception(
                 'Class must be an instance of Spatie\DataTransferObject\DataTransferObjectCollection!'
             );
@@ -172,5 +192,71 @@ class DataTransferObjectFactory
     public static function makeString(): string
     {
         return static::faker()->word;
+    }
+
+    /**
+     * Returns the instance of faker.
+     */
+    protected static function faker()
+    {
+        if (!isset(static::$faker)) {
+            static::$faker = Factory::create();
+        }
+
+        return static::$faker;
+    }
+
+    /**
+     * Attempts to retrieve the return type of a Data Transfer Object collection.
+     */
+    protected static function getDTOCollectionReturnType(string $collectionClass): ?string
+    {
+        $reflectionClass = new ReflectionClass($collectionClass);
+
+        // Attempts to determine the type based on return type of current()
+        $currentReturnType = $reflectionClass->getMethod('current')->getReturnType();
+
+        if ($currentReturnType) {
+            return $currentReturnType->getName();
+        }
+
+        // Attempts to determine the type based on return type of offsetGet()
+        $offsetGetReturnType = $reflectionClass->getMethod('offsetGet')->getReturnType();
+
+        if ($offsetGetReturnType) {
+            return $offsetGetReturnType->getName();
+        }
+
+        return null;
+    }
+
+    /**
+     * Determines whether or not the class name passed is a Data Transfer Object.
+     */
+    protected static function isDTO(string $class): bool
+    {
+        $reflectionClass = new ReflectionClass($class);
+
+        // This step just ensures we are dealing with a DTO
+        if (!$reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObject) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Determines whether or not the class name passed is a Data Transfer Object collection.
+     */
+    protected static function isDTOCollection(string $class): bool
+    {
+        $reflectionClass = new ReflectionClass($class);
+
+        // This step just ensures we are dealing with a DTO
+        if (!$reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObjectCollection) {
+            return false;
+        }
+
+        return true;
     }
 }

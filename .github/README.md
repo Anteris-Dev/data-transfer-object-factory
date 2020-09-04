@@ -7,7 +7,7 @@ This package supports DTO mocking for the Spatie [Data Transfer Object package](
 
 # To Install
 
-Run `composer require anteris-dev/data-transfer-object-factory`.
+Run `composer require anteris-dev/data-transfer-object-factory:dev-master`.
 
 - **Note**: This package require PHP 7.4 so it can take full advantage of type casting in PHP.
 
