@@ -21,6 +21,9 @@ class DataTransferObjectFactory
     /** @var Generator An instance of faker for use throughout this class. */
     protected static Generator $faker;
 
+    /** @var Generator An instance of phpDocumentor for use throughout this class. */
+    protected static $phpDocumentor;
+
     /**
      * Creates a new DataTransferObject from its definition.
      */
@@ -29,7 +32,7 @@ class DataTransferObjectFactory
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
-        if (! static::isDTO($class)) {
+        if (!static::isDTO($class)) {
             throw new Exception(
                 'Class must be an instance of Spatie\DataTransferObject\DataTransferObject!'
             );
@@ -37,7 +40,6 @@ class DataTransferObjectFactory
 
         $dtoParameters   = [];
         $classProperties = $reflectionClass->getProperties(ReflectionProperty::IS_PUBLIC);
-        $factory         = DocBlockFactory::createInstance();
 
         foreach ($classProperties as $property) {
             // Skip static properties
@@ -45,48 +47,43 @@ class DataTransferObjectFactory
                 continue;
             }
 
-            // Forgive the nested IF statements, but we wanna support docblocks!
-            if ($property->getDocComment()) {
-                $docblock   = $factory->create($property->getDocComment());
-                $var        = $docblock->getTagsByName('var');
+            // This is kinda messy, but we wanna support docblocks!
+            $docCommentType = static::getDocCommentType($property->getDocComment());
 
-                if ($var) {
-                    $type = $var[0]->getType();
-
-                    if (static::isDTO($type)) {
-                        $dtoParameters[$property->getName()] = static::make( $type );
-                        continue;
-                    }
-
-                    if (static::isDTOCollection($type)) {
-                        $dtoType = static::getDTOCollectionReturnType($type);
-
-                        if (! $dtoType) {
-                            throw new Exception("Unable to determine return dto type of $type collection!");
-                        }
-
-                        $dtoParameters[$property->getName()] = static::makeCollection($dtoType, $type);
-                        continue;
-                    }
-                }
+            if (
+                $docCommentType &&
+                (is_array($docCommentType) ||
+                    $docCommentType instanceof DataTransferObject)
+            ) {
+                $dtoParameters[$property->getName()] = $docCommentType;
+                continue;
             }
 
             // If the property does not have a type, randomize it
-            if (! $property->hasType()) {
+            if (!$docCommentType && !$property->hasType()) {
                 $dtoParameters[$property->getName()] = static::makeRandomType();
                 continue;
             }
 
             // Generate a value for properties with types
             // This section gets rid of namespaces when creating the make function
-            $propertyType = ucwords($property->getType()->getName());
-            $propertyType = trim(substr($propertyType, strrpos($propertyType, '\\')), '\\');
+            // BUT if a type was defined back in the docblock, default to that because
+            // that is the behavior of DataTransferObject.
+            if (!$docCommentType) {
+                $propertyType = ucwords($property->getType()->getName());
+                $propertyType = trim(substr($propertyType, strrpos($propertyType, '\\')), '\\');
+            } else {
+                $propertyType = $docCommentType;
+            }
 
-            if (! method_exists(static::class, "make$propertyType")) {
+            if (!method_exists(static::class, "make$propertyType")) {
                 throw new Exception("Unknown data type $propertyType!");
             }
 
             $dtoParameters[$property->getName()] = static::{"make$propertyType"}();
+
+            unset($docCommentType);
+            unset($propertyType);
         }
 
         // Return a new instance of our DataTransferObject
@@ -104,26 +101,35 @@ class DataTransferObjectFactory
     public static function makeCollection(
         string $dtoClass,
         string $dtoCollectionClass
-    ): DataTransferObjectCollection
-    {
+    ): DataTransferObjectCollection {
         // This step just ensures we are dealing with a DTO collection
-        if (! static::isDTOCollection($dtoCollectionClass)) {
+        if (!static::isDTOCollection($dtoCollectionClass)) {
             throw new Exception(
                 'Class must be an instance of Spatie\DataTransferObject\DataTransferObjectCollection!'
             );
         }
 
         // Now start creating some DTOs!
+        return new $dtoCollectionClass(
+            static::makeRandomNumberOfDtos($dtoClass)
+        );
+    }
+
+    /**
+     * Creates a random number (between 3 and 100) of Data Transfer Objects.
+     */
+    public static function makeRandomNumberOfDtos($class): array
+    {
         $numberOfDtos = random_int(3, 100);
         $numberOfDtosCreated = 0;
         $dtos = [];
 
         while ($numberOfDtosCreated < $numberOfDtos) {
-            $dtos[] = static::make($dtoClass);
+            $dtos[] = static::make($class);
             $numberOfDtosCreated++;
         }
 
-        return new $dtoCollectionClass( $dtos );
+        return $dtos;
     }
 
     /**
@@ -207,6 +213,73 @@ class DataTransferObjectFactory
     }
 
     /**
+     * Returns the instance of phpDocumentor.
+     */
+    protected static function phpDocumentor()
+    {
+        if (!isset(static::$phpDocumentor)) {
+            static::$phpDocumentor = DocBlockFactory::createInstance();
+        }
+
+        return static::$phpDocumentor;
+    }
+
+    /**
+     * This reads the doc comment and returns the type.
+     */
+    protected static function getDocCommentType($docComment)
+    {
+        if (!$docComment) {
+            return false;
+        }
+
+        // Find the var tag, if it doesn't exist, early return
+        $docblock   = static::phpDocumentor()->create($docComment);
+        $var        = $docblock->getTagsByName('var');
+
+        if (!$var) {
+            return false;
+        }
+
+        // This looks bad, but basically we're always gonna generate
+        // the first type, cause why bother with the second?
+        $type = explode('|', $var[0]->getType())[0];
+
+        $isArrayOfEntities = false;
+
+        // First remove the whole iterable thing
+        if (strpos($type, '[]')) {
+            $type = str_replace('[]', '', $type);
+            $isArrayOfEntities = true;
+        }
+
+        // Early return if not a DTO
+        if (!static::isDto($type)) {
+            return $type;
+        }
+
+        // If we are an iterable of entities make that now
+        if ($isArrayOfEntities) {
+            return static::makeRandomNumberOfDtos($type);
+        }
+
+        return static::make($type);
+
+        // Leaving this here to show that we could handle collections
+        // if they are ever supported
+
+        // if (static::isDTOCollection($type)) {
+        //     $dtoType = static::getDTOCollectionReturnType($type);
+
+        //     if (! $dtoType) {
+        //         throw new Exception("Unable to determine return dto type of $type collection!");
+        //     }
+
+        //     $dtoParameters[$property->getName()] = static::makeCollection($dtoType, $type);
+        // }
+    }
+
+    /**
      * Attempts to retrieve the return type of a Data Transfer Object collection.
      */
     protected static function getDTOCollectionReturnType(string $collectionClass): ?string
@@ -235,6 +308,10 @@ class DataTransferObjectFactory
      */
     protected static function isDTO(string $class): bool
     {
+        if (!class_exists($class)) {
+            return false;
+        }
+
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
@@ -250,6 +327,10 @@ class DataTransferObjectFactory
      */
     protected static function isDTOCollection(string $class): bool
     {
+        if (!class_exists($class)) {
+            return false;
+        }
+
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO

@@ -3,7 +3,7 @@
 
 This package supports DTO mocking for the Spatie [Data Transfer Object package](https://github.com/spatie/data-transfer-object). By default only built in PHP types are supported, but this factory can easily be extended to support other types (e.g. Carbon) as well.
 
-- **Note**: Right now doc block type casting is not supported.
+- **Note**: Right now doc block type casting is supported, though testing is limited.
 
 # To Install
 

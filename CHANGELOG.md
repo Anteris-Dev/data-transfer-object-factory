@@ -7,5 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2020-09-04
 ### Added
 - Initial generator class.
+- Support for doc block type casting.
 
 [0.1.0]: https://github.com/anteris-dev/data-transfer-object-factory/releases/tag/v0.1.0
