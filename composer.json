@@ -1,0 +1,32 @@
+{
+    "name": "anteris-dev/data-transfer-object-factory",
+    "description": "Gives an easy-to-use API for mocking Data Transfer Objects created with the Spatie package.",
+    "autoload": {
+        "psr-4": {
+            "Anteris\\DataTransferObjectFactory\\": "./src"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "./tests"
+        }
+    },
+    "require": {
+        "spatie/data-transfer-object": "^2.5",
+        "fzaninotto/faker": "^1.9",
+        "php": "^7.4"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Aidan Casey",
+            "email": "aidan.casey@anteris.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^9.3"
+    },
+    "scripts": {
+        "test": "./vendor/bin/phpunit"
+    }
+}
