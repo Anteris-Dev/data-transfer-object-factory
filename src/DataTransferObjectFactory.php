@@ -22,7 +22,7 @@ class DataTransferObjectFactory
     protected static Generator $faker;
 
     /** @var Generator An instance of phpDocumentor for use throughout this class. */
-    protected static $phpDocumentor;
+    protected static DocBlockFactory $phpDocumentor;
 
     /**
      * Creates a new DataTransferObject from its definition.
@@ -32,7 +32,7 @@ class DataTransferObjectFactory
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
-        if (!static::isDTO($class)) {
+        if (! static::isDTO($class)) {
             throw new Exception(
                 'Class must be an instance of Spatie\DataTransferObject\DataTransferObject!'
             );
@@ -56,12 +56,14 @@ class DataTransferObjectFactory
                     $docCommentType instanceof DataTransferObject)
             ) {
                 $dtoParameters[$property->getName()] = $docCommentType;
+
                 continue;
             }
 
             // If the property does not have a type, randomize it
-            if (!$docCommentType && !$property->hasType()) {
+            if (! $docCommentType && ! $property->hasType()) {
                 $dtoParameters[$property->getName()] = static::makeRandomType();
+
                 continue;
             }
 
@@ -69,14 +71,14 @@ class DataTransferObjectFactory
             // This section gets rid of namespaces when creating the make function
             // BUT if a type was defined back in the docblock, default to that because
             // that is the behavior of DataTransferObject.
-            if (!$docCommentType) {
+            if (! $docCommentType) {
                 $propertyType = ucwords($property->getType()->getName());
                 $propertyType = trim(substr($propertyType, strrpos($propertyType, '\\')), '\\');
             } else {
                 $propertyType = $docCommentType;
             }
 
-            if (!method_exists(static::class, "make$propertyType")) {
+            if (! method_exists(static::class, "make$propertyType")) {
                 throw new Exception("Unknown data type $propertyType!");
             }
 
@@ -92,10 +94,10 @@ class DataTransferObjectFactory
 
     /**
      * Creates a collection of DataTransferObjects.
-     * 
+     *
      * @param  string  $dtoClass  The DataTransferObject we should be creating a collection for.
      * @param  string  $dtoCollection  The collection we should be returning.
-     * 
+     *
      * @author Aidan Casey <aidan.casey@anteris.com>
      */
     public static function makeCollection(
@@ -103,7 +105,7 @@ class DataTransferObjectFactory
         string $dtoCollectionClass
     ): DataTransferObjectCollection {
         // This step just ensures we are dealing with a DTO collection
-        if (!static::isDTOCollection($dtoCollectionClass)) {
+        if (! static::isDTOCollection($dtoCollectionClass)) {
             throw new Exception(
                 'Class must be an instance of Spatie\DataTransferObject\DataTransferObjectCollection!'
             );
@@ -120,9 +122,9 @@ class DataTransferObjectFactory
      */
     public static function makeRandomNumberOfDtos($class): array
     {
-        $numberOfDtos = random_int(3, 100);
+        $numberOfDtos        = random_int(3, 100);
         $numberOfDtosCreated = 0;
-        $dtos = [];
+        $dtos                = [];
 
         while ($numberOfDtosCreated < $numberOfDtos) {
             $dtos[] = static::make($class);
@@ -205,7 +207,7 @@ class DataTransferObjectFactory
      */
     protected static function faker()
     {
-        if (!isset(static::$faker)) {
+        if (! isset(static::$faker)) {
             static::$faker = Factory::create();
         }
 
@@ -217,7 +219,7 @@ class DataTransferObjectFactory
      */
     protected static function phpDocumentor()
     {
-        if (!isset(static::$phpDocumentor)) {
+        if (! isset(static::$phpDocumentor)) {
             static::$phpDocumentor = DocBlockFactory::createInstance();
         }
 
@@ -229,7 +231,7 @@ class DataTransferObjectFactory
      */
     protected static function getDocCommentType($docComment)
     {
-        if (!$docComment) {
+        if (! $docComment) {
             return false;
         }
 
@@ -237,7 +239,7 @@ class DataTransferObjectFactory
         $docblock   = static::phpDocumentor()->create($docComment);
         $var        = $docblock->getTagsByName('var');
 
-        if (!$var) {
+        if (! $var) {
             return false;
         }
 
@@ -249,12 +251,12 @@ class DataTransferObjectFactory
 
         // First remove the whole iterable thing
         if (strpos($type, '[]')) {
-            $type = str_replace('[]', '', $type);
+            $type              = str_replace('[]', '', $type);
             $isArrayOfEntities = true;
         }
 
         // Early return if not a DTO
-        if (!static::isDto($type)) {
+        if (! static::isDto($type)) {
             return $type;
         }
 
@@ -308,14 +310,14 @@ class DataTransferObjectFactory
      */
     protected static function isDTO(string $class): bool
     {
-        if (!class_exists($class)) {
+        if (! class_exists($class)) {
             return false;
         }
 
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
-        if (!$reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObject) {
+        if (! $reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObject) {
             return false;
         }
 
@@ -327,14 +329,14 @@ class DataTransferObjectFactory
      */
     protected static function isDTOCollection(string $class): bool
     {
-        if (!class_exists($class)) {
+        if (! class_exists($class)) {
             return false;
         }
 
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
-        if (!$reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObjectCollection) {
+        if (! $reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObjectCollection) {
             return false;
         }
 

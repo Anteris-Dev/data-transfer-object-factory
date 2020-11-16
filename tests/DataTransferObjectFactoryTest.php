@@ -31,7 +31,7 @@ class DataTransferObjectFactoryTest extends TestCase
     {
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Class must be an instance of Spatie\DataTransferObject\DataTransferObject!');
-        DataTransferObjectFactory::make( TestClass::class );
+        DataTransferObjectFactory::make(TestClass::class);
     }
 
     /**
