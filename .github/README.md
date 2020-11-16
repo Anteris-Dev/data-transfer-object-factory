@@ -1,5 +1,6 @@
 # Making it easy to mock your Data Transfer Objects
-[![Test](https://github.com/Anteris-Dev/data-transfer-object-factory/workflows/Test/badge.svg)](https://github.com/Anteris-Dev/data-transfer-object-factory/actions?query=workflow%3ATest)
+[![Tests](https://github.com/Anteris-Dev/data-transfer-object-factory/workflows/Tests/badge.svg)](https://github.com/Anteris-Dev/data-transfer-object-factory/actions?query=workflow%3ATests)
+[![Style](https://github.com/Anteris-Dev/data-transfer-object-factory/workflows/Style/badge.svg)](https://github.com/Anteris-Dev/data-transfer-object-factory/actions?query=workflow%3AStyle)
 
 This package supports DTO mocking for the Spatie [Data Transfer Object package](https://github.com/spatie/data-transfer-object). By default only built in PHP types are supported, but this factory can easily be extended to support other types (e.g. Carbon) as well.
 
