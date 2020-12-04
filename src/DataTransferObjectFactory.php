@@ -67,6 +67,19 @@ class DataTransferObjectFactory
                 continue;
             }
 
+            // Now that we have checked doc blocks, check for a DTO and generate
+            // one if that is the type of this property.
+            if (
+                ! $docCommentType &&
+                static::isDTO($property->getType()->getName())
+            ) {
+                $dtoParameters[$property->getName()] = static::make(
+                    $property->getType()->getName()
+                );
+
+                continue;
+            }
+
             // Generate a value for properties with types
             // This section gets rid of namespaces when creating the make function
             // BUT if a type was defined back in the docblock, default to that because
@@ -317,7 +330,8 @@ class DataTransferObjectFactory
         $reflectionClass = new ReflectionClass($class);
 
         // This step just ensures we are dealing with a DTO
-        if (! $reflectionClass->newInstanceWithoutConstructor() instanceof DataTransferObject) {
+        // ->newInstanceWithoutConstructor() instanceof DataTransferObject
+        if (! $reflectionClass->isSubclassOf(DataTransferObject::class)) {
             return false;
         }
 
