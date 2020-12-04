@@ -6,10 +6,12 @@ use Anteris\DataTransferObjectFactory\DataTransferObjectFactory;
 use DateTime;
 use Exception;
 use PHPUnit\Framework\TestCase;
+use Tests\TestData\TestChildDTO;
 use Tests\TestData\TestClass;
 use Tests\TestData\TestDTO;
 use Tests\TestData\TestDTOCollection;
 use Tests\TestData\TestDTOWithUnknownType;
+use Tests\TestData\TestParentDTO;
 
 class DataTransferObjectFactoryTest extends TestCase
 {
@@ -42,6 +44,24 @@ class DataTransferObjectFactoryTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('Unknown data type Carbon!');
         DataTransferObjectFactory::make(TestDTOWithUnknownType::class);
+    }
+
+    /**
+     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     */
+    public function test_it_can_create_dto_with_child_dto()
+    {
+        $dto = DataTransferObjectFactory::make(TestParentDTO::class);
+
+        $this->assertInstanceOf(
+            TestParentDTO::class,
+            $dto
+        );
+
+        $this->assertInstanceOf(
+            TestChildDTO::class,
+            $dto->person
+        );
     }
 
     /**
