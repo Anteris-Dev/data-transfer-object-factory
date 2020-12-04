@@ -27,6 +27,8 @@ $object = DataTransferObjectFactory::make( DataTransferObject::class );
 
 ```
 
+- **Note**: If your DTO contains a property which is cast to another DTO, this will be generated if the fully qualified domain name is used. (e.g. `\Tests\TestData\TestClass`).
+
 You can even fake a collection of DTOs.
 
 ```php
