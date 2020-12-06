@@ -8,14 +8,16 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "./tests"
+            "Anteris\\Tests\\DataTransferObjectFactory\\": "./tests"
         }
     },
     "require": {
         "spatie/data-transfer-object": "^2.0",
         "php": "^7.4",
         "phpdocumentor/reflection-docblock": "^5.0",
-        "fakerphp/faker": "^1.0"
+        "fakerphp/faker": "^1.0",
+        "anteris-dev/faker-map": "^0.1.0",
+        "nesbot/carbon": "^2.42"
     },
     "license": "MIT",
     "authors": [

@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+## Added
+- Support for smart generation of properties. Faker will guess the type of data to be populated based on the property name (e.g. homeAddress property is populated with an address).
+
+## Changed
+- The factory API to be more fluent
+- The entry point to the `Anteris\DataTransferObjectFactory\Factory` class.
+- Extensions to the generator are made through `PropertyFactory::registerProvider()`
+
 ## [0.1.2] - 2020-12-04
 ### Fixed
 - Factory was not generating child DTOs for properties that were typed to a DTO.

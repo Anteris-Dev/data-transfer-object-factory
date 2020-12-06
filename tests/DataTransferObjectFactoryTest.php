@@ -1,160 +1,131 @@
 <?php
 
-namespace Tests;
+namespace Anteris\Tests\DataTransferObjectFactory;
 
 use Anteris\DataTransferObjectFactory\DataTransferObjectFactory;
+use Anteris\Tests\DataTransferObjectFactory\Collections\PersonCollection;
+use Anteris\Tests\DataTransferObjectFactory\DataTransferObjects\PersonData;
 use DateTime;
-use Exception;
-use PHPUnit\Framework\TestCase;
-use Tests\TestData\TestChildDTO;
-use Tests\TestData\TestClass;
-use Tests\TestData\TestDTO;
-use Tests\TestData\TestDTOCollection;
-use Tests\TestData\TestDTOWithUnknownType;
-use Tests\TestData\TestParentDTO;
 
-class DataTransferObjectFactoryTest extends TestCase
+class DataTransferObjectFactoryTest extends AbstractTestCase
 {
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
      */
-    public function test_it_can_make_dto()
+    public function test_new_factory_is_empty()
     {
-        $this->assertInstanceOf(
-            TestDTO::class,
-            DataTransferObjectFactory::make(TestDTO::class)
+        $countProp = $this->getProtectedProperty(
+            DataTransferObjectFactory::class,
+            'count'
         );
+
+        $collectionProp = $this->getProtectedProperty(
+            DataTransferObjectFactory::class,
+            'collectionClass'
+        );
+
+        $dtoProp = $this->getProtectedProperty(
+            DataTransferObjectFactory::class,
+            'dataTransferObjectClass'
+        );
+
+        $factory1 = DataTransferObjectFactory::new()
+                        ->dto(PersonData::class)
+                        ->collection(PersonCollection::class)
+                        ->count(5);
+
+        $this->assertEquals($countProp->getValue($factory1), 5);
+        $this->assertEquals($dtoProp->getValue($factory1), PersonData::class);
+        $this->assertEquals($collectionProp->getValue($factory1), PersonCollection::class);
+
+        $factory2 = $factory1::new();
+        
+        $this->expectErrorMessage('Typed property Anteris\DataTransferObjectFactory\DataTransferObjectFactory::$count must not be accessed before initialization');
+        $countProp->getValue($factory2);
+
+        $this->expectErrorMessage('Typed property Anteris\DataTransferObjectFactory\DataTransferObjectFactory::$collectionClass must not be accessed before initialization');
+        $dtoProp->getValue($factory2);
+
+        $this->expectErrorMessage('Typed property Anteris\DataTransferObjectFactory\DataTransferObjectFactory::$dataTransferObjectClass must not be accessed before initialization');
+        $collectionProp->getValue($factory2);
     }
 
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
      */
-    public function test_it_cannot_make_non_dto()
+    public function test_it_will_not_accept_non_dto()
     {
-        $this->expectException(Exception::class);
         $this->expectExceptionMessage('Class must be an instance of Spatie\DataTransferObject\DataTransferObject!');
-        DataTransferObjectFactory::make(TestClass::class);
+        DataTransferObjectFactory::new()->dto(DateTime::class);
     }
 
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
      */
-    public function test_it_cannot_make_dto_with_unknown_type()
+    public function test_it_will_not_accept_non_collection()
     {
-        $this->expectException(Exception::class);
-        $this->expectExceptionMessage('Unknown data type Carbon!');
-        DataTransferObjectFactory::make(TestDTOWithUnknownType::class);
-    }
-
-    /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
-     */
-    public function test_it_can_create_dto_with_child_dto()
-    {
-        $dto = DataTransferObjectFactory::make(TestParentDTO::class);
-
-        $this->assertInstanceOf(
-            TestParentDTO::class,
-            $dto
-        );
-
-        $this->assertInstanceOf(
-            TestChildDTO::class,
-            $dto->person
-        );
-    }
-
-    /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
-     */
-    public function test_it_can_make_dto_collection()
-    {
-        $collection = DataTransferObjectFactory::makeCollection(
-            TestDTO::class,
-            TestDTOCollection::class
-        );
-
-        $this->assertInstanceOf(
-            TestDTOCollection::class,
-            $collection
-        );
-
-        $this->assertIsIterable($collection);
-    }
-
-    /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
-     */
-    public function test_it_cannot_make_non_dto_collection()
-    {
-        $this->expectException(Exception::class);
         $this->expectExceptionMessage('Class must be an instance of Spatie\DataTransferObject\DataTransferObjectCollection!');
-        DataTransferObjectFactory::makeCollection(TestDTO::class, TestClass::class);
+        DataTransferObjectFactory::new()->collection(DateTime::class);
     }
 
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
      */
-    public function test_it_can_make_array()
+    public function test_it_cannot_make_dto_if_dto_is_not_set()
     {
-        $this->assertIsArray(DataTransferObjectFactory::makeArray());
+        $this->expectExceptionMessage('Please specify a Data Transfer Object to be generated!');
+        DataTransferObjectFactory::new()->make();
     }
 
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\PropertyFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
      */
-    public function test_it_can_make_bool()
+    public function test_it_can_make_single_dto()
     {
-        $this->assertIsBool(DataTransferObjectFactory::makeBool());
+        $dto = DataTransferObjectFactory::new()->dto(PersonData::class)->make();
+
+        $this->assertInstanceOf(PersonData::class, $dto);
     }
 
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\PropertyFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
      */
-    public function test_it_can_make_date_time()
+    public function test_it_can_make_array_of_dtos()
     {
-        $this->assertInstanceOf(DateTime::class, DataTransferObjectFactory::makeDateTime());
+        $dtos = DataTransferObjectFactory::new()->dto(PersonData::class)->count(3)->make();
+
+        $this->assertIsArray($dtos);
+
+        foreach ($dtos as $dto) {
+            $this->assertInstanceOf(PersonData::class, $dto);
+        }
     }
 
     /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\CollectionFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\PropertyFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
      */
-    public function test_it_can_make_int()
+    public function test_it_can_make_collection_of_dtos()
     {
-        $this->assertIsInt(DataTransferObjectFactory::makeInt());
-    }
+        $dtos = DataTransferObjectFactory::new()
+            ->dto(PersonData::class)
+            ->random()
+            ->collection(PersonCollection::class)
+            ->make();
 
-    /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
-     */
-    public function test_it_can_make_float()
-    {
-        $this->assertIsFloat(DataTransferObjectFactory::makeFloat());
-    }
+        $this->assertInstanceOf(PersonCollection::class, $dtos);
 
-    /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
-     */
-    public function test_it_can_make_random_type()
-    {
-        $this->assertContains(
-            gettype(DataTransferObjectFactory::makeRandomType()),
-            [
-                'array',
-                'boolean',
-                'object',
-                'integer',
-                'double',
-                'string',
-            ]
-        );
-    }
-
-    /**
-     * @covers Anteris\DataTransferObjectFactory\DataTransferObjectFactory
-     */
-    public function test_it_can_make_string()
-    {
-        $this->assertIsString(DataTransferObjectFactory::makeString());
+        foreach ($dtos as $dto) {
+            $this->assertInstanceOf(PersonData::class, $dto);
+        }
     }
 }
