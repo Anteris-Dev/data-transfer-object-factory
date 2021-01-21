@@ -67,7 +67,9 @@ Factory::collection(DataTransferObjectCollection::class)->fill($dtos)->make();
 
 ```
 
-It used to be that you had to extend the factory class to utilize custom types. You can now do so through the `registerProvider()` method on the `PropertyFactory` class. This method takes two arguments. The first should be the FQDN of the class you are providing (e.g. `Carbon\Carbon`) OR the built-in type (e.g. `string`). The second should be a callback that returns the generated value. This callback is passed an instance of `Anteris\FakerMap\FakerMap` when called and can be utilized to assist in generating the value.
+## Extending
+
+It used to be that you had to extend the factory class to utilize custom types. You can now do so through the static `registerProvider()` method on the `PropertyFactory` class. This method takes two arguments. The first should be the FQDN of the class you are providing (e.g. `Carbon\Carbon`) OR the built-in type (e.g. `string`). The second should be a callback that returns the generated value. This callback is passed two properties when called to assist in generating the value. The first is an instance of `Anteris\FakerMap\FakerMap` which can be used to help generate fake data. The second is an instance of `ReflectionProperty` which contains information about the property being generated.
 
 For example, to support Carbon:
 
@@ -75,7 +77,9 @@ For example, to support Carbon:
 
 use Anteris\DataTransferObjectFactory\PropertyFactory;
 
-PropertyFactory::registerProvider('Carbon\Carbon', fn($fakerMap) => Carbon::parse(
+use Anteris\FakerMap\FakerMap;
+
+PropertyFactory::registerProvider('Carbon\Carbon', fn(FakerMap $fakerMap) => Carbon::parse(
     $fakerMap->closest('dateTime')->fake()
 ));
 

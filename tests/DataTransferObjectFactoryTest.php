@@ -4,7 +4,9 @@ namespace Anteris\Tests\DataTransferObjectFactory;
 
 use Anteris\DataTransferObjectFactory\DataTransferObjectFactory;
 use Anteris\Tests\DataTransferObjectFactory\Collections\PersonCollection;
+use Anteris\Tests\DataTransferObjectFactory\DataTransferObjects\FamilyData;
 use Anteris\Tests\DataTransferObjectFactory\DataTransferObjects\PersonData;
+use Anteris\Tests\DataTransferObjectFactory\DataTransferObjects\PersonDataDocBlock;
 use DateTime;
 
 class DataTransferObjectFactoryTest extends AbstractTestCase
@@ -126,6 +128,28 @@ class DataTransferObjectFactoryTest extends AbstractTestCase
 
         foreach ($dtos as $dto) {
             $this->assertInstanceOf(PersonData::class, $dto);
+        }
+    }
+
+    /**
+     * @covers \Anteris\DataTransferObjectFactory\CollectionFactory
+     * @covers \Anteris\DataTransferObjectFactory\DataTransferObjectFactory
+     * @covers \Anteris\DataTransferObjectFactory\PropertyFactory
+     * @covers \Anteris\DataTransferObjectFactory\Validator
+     */
+    public function test_it_can_generate_dto_with_collection_property()
+    {
+        $family = DataTransferObjectFactory::new()
+            ->dto(FamilyData::class)
+            ->make();
+
+        $this->assertInstanceOf(FamilyData::class, $family);
+
+        $this->assertInstanceOf(PersonDataDocBlock::class, $family->person1);
+        $this->assertInstanceOf(PersonDataDocBlock::class, $family->person2);
+
+        foreach ($family->children as $child) {
+            $this->assertInstanceOf(PersonData::class, $child);
         }
     }
 }
