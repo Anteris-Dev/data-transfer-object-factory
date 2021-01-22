@@ -10,6 +10,7 @@ class CollectionFactory
     protected string $collectionClass;
     protected array $contents;
     protected string $dataTransferObjectClass;
+    protected array $states = [];
 
     public static function new()
     {
@@ -56,11 +57,37 @@ class CollectionFactory
         return $clone;
     }
 
+    /**
+     * Create a sequence of overrides.
+     */
+    public function sequence(...$sequence)
+    {
+        return $this->state(Sequence::make(...$sequence));
+    }
+
+    /**
+     * Manually override attributes by passing an array of values.
+     *
+     * @param callable|array $state
+     */
+    public function state($state)
+    {
+        $clone = clone $this;
+
+        if (! is_callable($state)) {
+            $state = fn () => $state;
+        }
+
+        $clone->states[] = $state;
+
+        return $clone;
+    }
+
     /***************************************************************************
      * Collection Creator
      **************************************************************************/
 
-    public function make()
+    public function make($attributes = [])
     {
         if (! isset($this->collectionClass)) {
             throw new InvalidCollectionException('Please specify a Collection to be generated!');
@@ -74,7 +101,8 @@ class CollectionFactory
             $dtos = DataTransferObjectFactory::new()
                 ->dto($this->dataTransferObjectClass)
                 ->random()
-                ->make();
+                ->states($this->states)
+                ->make($attributes);
 
             return new $this->collectionClass($dtos);
         }

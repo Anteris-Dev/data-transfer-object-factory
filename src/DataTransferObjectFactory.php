@@ -13,6 +13,7 @@ class DataTransferObjectFactory
     protected string $collectionClass;
     protected int $count;
     protected string $dataTransferObjectClass;
+    protected array $states = [];
 
     public static function new()
     {
@@ -76,16 +77,61 @@ class DataTransferObjectFactory
         return $clone;
     }
 
+    /**
+     * Create a sequence of overrides.
+     */
+    public function sequence(...$sequence)
+    {
+        return $this->state(Sequence::make(...$sequence));
+    }
+
+    /**
+     * Manually override attributes by passing an array of values.
+     *
+     * @param callable|array $state
+     */
+    public function state($state)
+    {
+        $clone = clone $this;
+
+        if (! is_callable($state)) {
+            $state = fn () => $state;
+        }
+
+        $clone->states[] = $state;
+
+        return $clone;
+    }
+
+    /**
+     * Sets multiple states.
+     */
+    public function states(array $states)
+    {
+        $clone = clone $this;
+
+        foreach ($states as $state) {
+            $clone = $this->state($state);
+        }
+
+        return $clone;
+    }
+
     /***************************************************************************
      * DTO Creator
      **************************************************************************/
 
-    public function make()
+    public function make(array $attributes = [])
     {
         if (! isset($this->dataTransferObjectClass)) {
             throw new InvalidDataTransferObjectException(
                 'Please specify a Data Transfer Object to be generated!'
             );
+        }
+
+        // Pass attributes along as state
+        if (! empty($attributes)) {
+            return $this->state($attributes)->make();
         }
 
         if (! isset($this->count) && ! isset($this->collectionClass)) {
@@ -112,12 +158,28 @@ class DataTransferObjectFactory
         $parameters = [];
         $properties = $class->getProperties(ReflectionProperty::IS_PUBLIC);
 
+        // Resolve all our state options...
+        $preset = [];
+
+        foreach ($this->states as $state) {
+            $result = $state();
+            $preset = array_merge($preset, is_array($result) ? $result : []);
+        }
+
         foreach ($properties as $property) {
             if ($property->isStatic()) {
                 continue;
             }
 
-            $parameters[$property->getName()] = PropertyFactory::new()->make($property);
+            $propertyName = $property->getName();
+
+            if (isset($preset[$propertyName])) {
+                $parameters[$propertyName] = $preset[$propertyName];
+
+                continue;
+            }
+
+            $parameters[$propertyName] = PropertyFactory::new()->make($property);
         }
 
         return (new $this->dataTransferObjectClass($parameters));

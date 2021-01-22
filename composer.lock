@@ -3718,16 +3718,16 @@
         },
         {
             "name": "spatie/ray",
-            "version": "1.14.0",
+            "version": "1.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/ray.git",
-                "reference": "1edffecbf07ec43edbe92ff0c899af3324b15946"
+                "reference": "f077552e2cc67cc7fc7265710abf2dd2de4b5c20"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/ray/zipball/1edffecbf07ec43edbe92ff0c899af3324b15946",
-                "reference": "1edffecbf07ec43edbe92ff0c899af3324b15946",
+                "url": "https://api.github.com/repos/spatie/ray/zipball/f077552e2cc67cc7fc7265710abf2dd2de4b5c20",
+                "reference": "f077552e2cc67cc7fc7265710abf2dd2de4b5c20",
                 "shasum": ""
             },
             "require": {
@@ -3776,7 +3776,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/ray/issues",
-                "source": "https://github.com/spatie/ray/tree/1.14.0"
+                "source": "https://github.com/spatie/ray/tree/1.16.0"
             },
             "funding": [
                 {
@@ -3788,7 +3788,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2021-01-20T10:16:58+00:00"
+            "time": "2021-01-22T18:52:17+00:00"
         },
         {
             "name": "symfony/console",

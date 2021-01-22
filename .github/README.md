@@ -15,25 +15,52 @@ If you are simply using PHP default types in your DTOs, you can get started righ
 - `count()` - _Allows you to specify how many DTOs to be generated. By default they will be returned in an array unless a collection is specified._
 - `make()` - _Called when you are ready to generate the DTO. Returns the generated DTO._
 - `random()` - _Generates a random number of DTOs_
+- `sequence()` - _Alternates a specific state. (See below)_
+- `state()` - _Manually sets properties based on the array of values passed._
 
 Examples of these methods can be found below.
 
 ```php
 
-use Anteris\Example\DataTransferObject;
-use Anteris\Example\DataTransferObjectCollection;
 use Anteris\DataTransferObjectFactory\Factory;
 
 // Creates one DTO
-Factory::dto(DataTransferObject::class)->make();
+Factory::dto(PersonData::class)->make();
 
 // Creates two DTOs in an array
-Factory::dto(DataTransferObject::class)->count(2)->make();
+Factory::dto(PersonData::class)->count(2)->make();
 
 // Creates a random number of DTOs in a collection
-Factory::dto(DataTransferObject::class)
+Factory::dto(PersonData::class)
     ->random()
-    ->collection(DataTransferObjectCollection::class)
+    ->collection(PersonCollection::class)
+    ->make();
+
+// Sets the first name of every person to "Jim"
+Factory::dto(PersonData::class)
+    ->random()
+    ->collection(PersonCollection::class)
+    ->state([
+        'firstName' => 'Jim',
+    ])
+    ->make();
+
+// Also sets the first name of every person to "Jim"
+Factory::dto(PersonData::class)
+    ->random()
+    ->collection(PersonCollection::class)
+    ->make([
+        'firstName' => 'Jim',
+    ]);
+
+// Alternates the names of each person between "Jim" and "Susie"
+Factory::dto(PersonData::class)
+    ->random()
+    ->collection(PersonCollection::class)
+    ->sequence(
+        [ 'firstName' => 'Jim' ],
+        [ 'firstName' => 'Susie' ]
+    )
     ->make();
 
 ```
@@ -43,23 +70,47 @@ While you can generate a collection from the DTO factory, you can also do so fro
 - `fill()` - _Allows you to pass in an array of DTOs to fill the collection with. Should not be used with `of()`._
 - `make()` - _Makes the collection._
 - `of()` - _Allows you to pass a DTO class that the collection will be filled with. Should not be used with `fill()`._
+- `sequence()` - _Alternates a specific state on the DTOs it contains. (See below)_
+- `state()` - _Manually sets properties on the DTOs based on the array of values passed._
 
 Examples of these methods can be found below.
 
 ```php
 
-use Anteris\Example\DataTransferObject;
-use Anteris\Example\DataTransferObjectCollection;
 use Anteris\DataTransferObjectFactory\Factory;
 
-// This will create a new collection of my DTOs with fake data
-Factory::collection(DataTransferObjectCollection::class)
-    ->of(DataTransferObject::class)
+// This will create a new collection of people with fake data
+Factory::collection(PersonCollection::class)
+    ->of(PersonData::class)
     ->make();
 
 // This will create a new collection and fill it with the DTOs we pass
-$dtos = Factory::dto(DataTransferObject::class)->count(15)->make();
-Factory::collection(DataTransferObjectCollection::class)->fill($dtos)->make();
+$dtos = Factory::dto(PersonData::class)->count(15)->make();
+Factory::collection(PersonCollection::class)->fill($dtos)->make();
+
+// Sets the first name of every person to "Jim"
+Factory::collection(PersonCollection::class)
+    ->dto(PersonData::class)
+    ->state([
+        'firstName' => 'Jim',
+    ])
+    ->make();
+
+// Also sets the first name of every person to "Jim"
+Factory::collection(PersonCollection::class)
+    ->dto(PersonData::class)
+    ->make([
+        'firstName' => 'Jim',
+    ]);
+
+// Alternates the names of each person between "Jim" and "Susie"
+Factory::collection(PersonCollection::class)
+    ->dto(PersonData::class)
+    ->sequence(
+        [ 'firstName' => 'Jim' ],
+        [ 'firstName' => 'Susie' ]
+    )
+    ->make();
 
 ```
 

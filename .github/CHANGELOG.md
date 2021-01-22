@@ -8,6 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Added
 - Support for smart generation of properties. Faker will guess the type of data to be populated based on the property name (e.g. homeAddress property is populated with an address).
+- Support for states.
+- Support for sequences.
 
 ## Changed
 - The factory API to be more fluent
