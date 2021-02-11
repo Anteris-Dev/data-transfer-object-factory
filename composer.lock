@@ -218,25 +218,23 @@
         },
         {
             "name": "spatie/data-transfer-object",
-            "version": "2.5.0",
+            "version": "2.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/data-transfer-object.git",
-                "reference": "e326e10c8fd694db9b0c584c4986370beb9fd3ce"
+                "reference": "959f31763f1206896c3a55c5504b2a5e774de715"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/data-transfer-object/zipball/e326e10c8fd694db9b0c584c4986370beb9fd3ce",
-                "reference": "e326e10c8fd694db9b0c584c4986370beb9fd3ce",
+                "url": "https://api.github.com/repos/spatie/data-transfer-object/zipball/959f31763f1206896c3a55c5504b2a5e774de715",
+                "reference": "959f31763f1206896c3a55c5504b2a5e774de715",
                 "shasum": ""
             },
             "require": {
-                "php": "^7.4"
+                "php": "^7.4|^8.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^2.16",
-                "larapack/dd": "^1.0",
-                "phpunit/phpunit": "^7.0"
+                "phpunit/phpunit": "^9.0"
             },
             "suggest": {
                 "phpstan/phpstan": "Take advantage of checkUninitializedProperties with \\Spatie\\DataTransferObject\\PHPstan\\PropertiesAreAlwaysInitializedExtension"
@@ -267,7 +265,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/data-transfer-object/issues",
-                "source": "https://github.com/spatie/data-transfer-object/tree/master"
+                "source": "https://github.com/spatie/data-transfer-object/tree/2.8.1"
             },
             "funding": [
                 {
@@ -275,7 +273,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2020-08-28T09:26:20+00:00"
+            "time": "2021-02-10T12:22:12+00:00"
         },
         {
             "name": "symfony/polyfill-ctype",
