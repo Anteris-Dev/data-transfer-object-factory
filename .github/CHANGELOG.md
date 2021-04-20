@@ -10,11 +10,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support for smart generation of properties. Faker will guess the type of data to be populated based on the property name (e.g. homeAddress property is populated with an address).
 - Support for states.
 - Support for sequences.
+- Support for PHP 8.
 
 ## Changed
 - The factory API to be more fluent
 - The entry point to the `Anteris\DataTransferObjectFactory\Factory` class.
 - Extensions to the generator are made through `PropertyFactory::registerProvider()`
+
+## Removed
+- Support for PHP 7.4.
+- Support for collections.
 
 ## [0.1.2] - 2020-12-04
 ### Fixed

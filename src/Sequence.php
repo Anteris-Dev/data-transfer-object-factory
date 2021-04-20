@@ -4,9 +4,11 @@ namespace Anteris\DataTransferObjectFactory;
 
 class Sequence
 {
-    protected int $index = 0;
-    protected int $last;
-    protected $sequence;
+    private int $index = 0;
+    
+    private int $last;
+    
+    private $sequence;
 
     public function __construct(...$sequence)
     {

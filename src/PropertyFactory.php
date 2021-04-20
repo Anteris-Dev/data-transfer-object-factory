@@ -3,190 +3,131 @@
 namespace Anteris\DataTransferObjectFactory;
 
 use Anteris\FakerMap\FakerMap;
-use phpDocumentor\Reflection\DocBlock\Tags\Var_;
-use phpDocumentor\Reflection\DocBlockFactory;
-use ReflectionClass;
-use ReflectionProperty;
 
 class PropertyFactory
 {
-    protected DocBlockFactory $phpDocumentor;
-    protected static array $providers = [];
+    private static $providers = [];
+    
+    private FakerMap $fakerMap;
 
-    public function __construct()
+    private ?string $name;
+
+    private array $types = [];
+
+    public function __construct(?FakerMap $fakerMap = null)
     {
-        $this->phpDocumentor = DocBlockFactory::createInstance();
+        $this->fakerMap = $fakerMap ?? FakerMap::new();
     }
 
-    public static function new(): self
+    public static function new(): static
     {
-        return new self;
+        return new static;
     }
 
-    public static function registerProvider(string $name, callable $callback): void
+    public static function registerProvider(string $type, callable $callback): void
     {
-        static::$providers[$name] = $callback;
+        static::$providers[$type] = $callback;
     }
 
-    public function make(ReflectionProperty $property)
+    public function name(string $name): static
     {
-        $type = $this->extractType($property);
+        $clone       = clone $this;
+        $clone->name = $name;
 
-        // If a provider was registered to handle this type, pass off to that.
+        return $clone;
+    }
+
+    public function type(string $type): static
+    {
+        $clone          = clone $this;
+        $clone->types[] = $type;
+
+        return $clone;
+    }
+
+    public function types(array $types): static
+    {
+        $clone        = clone $this;
+        $clone->types = $types;
+
+        return $clone;
+    }
+
+    public function make()
+    {
+        if (isset($this->name)) {
+            $guessedValue = $this->fakerMap->new()->closest($this->name)->fake();
+
+            if (
+                $guessedValue != null &&
+                (
+                    count($this->types) <= 0 ||
+                    in_array(gettype($guessedValue), $this->types)
+                )
+            ) {
+                return $guessedValue;
+            }
+        }
+
+        return $this->makeProperty();
+    }
+
+    private function makeProperty()
+    {
+        // Get a type to generate.
+        if (empty($this->types)) {
+            $type = $this->getRandomType();
+        } else {
+            $type = $this->types[array_rand($this->types, 1)];
+        }
+
+        // Check providers first.
         if (isset(static::$providers[$type])) {
-            return static::$providers[$type](new FakerMap, $property);
+            return static::$providers[$type](FakerMap::new(), $this->name ?? null);
         }
 
-        // We will try to generate a property that matches what the property name
-        // indicates it expects. (e.g. $firstName would have "John")
-        $faker = FakerMap::closest($property->getName());
-
-        // If the property was type cast, we will ensure the returned type is
-        // what the property expects. Otherwise we will fallback on a value based
-        // on the type.
-        if ($type != null) {
-            $faker = $faker->type($type)->default(
-                $this->createPropertyOfType($type)
-            );
-        }
-
-        // If the property did not have a type, we will fallback on a random
-        // type.
-        if ($type == null) {
-            $faker = $faker->default($this->createPropertyOfRandomType());
-        }
-
-        return $faker->fake();
-    }
-
-    protected function extractType(ReflectionProperty $property): ?string
-    {
-        if (
-            $property->getDocComment() &&
-            $type = $this->extractDocBlockType($property)
-        ) {
-            return $type;
-        }
-
-        $type = $property->getType();
-
-        if ($type) {
-            return $type->getName();
-        }
-
-        return null;
-    }
-
-    protected function extractDocBlockType(ReflectionProperty $property): ?string
-    {
-        $docblock = $this->phpDocumentor->create($property->getDocComment());
-
-        /** @var Var_[] An array of any variable tags. */
-        $var = $docblock->getTagsByName('var');
-
-        if ($var && isset($var[0])) {
-            $types = explode('|', $var[0]->getType());
-
-            // Picks a random type out of the options and removes the first
-            // namespace character to match Reflection Type form.
-            return ltrim(
-                $types[array_rand($types, 1)],
-                '\\'
-            );
-        }
-
-        return null;
-    }
-
-    protected function extractCollectionReturnType(string $collectionClass)
-    {
-        $reflectionClass = new ReflectionClass($collectionClass);
-
-        $offsetGetReturnType = $reflectionClass
-            ->getMethod('offsetGet')
-            ->getReturnType();
-
-        if ($offsetGetReturnType) {
-            return $offsetGetReturnType->getName();
-        }
-
-        $currentReturnType = $reflectionClass
-            ->getMethod('current')
-            ->getReturnType();
-
-        if ($currentReturnType) {
-            return $currentReturnType->getName();
-        }
-
-        return null;
-    }
-
-    protected function createPropertyOfType(string $type)
-    {
-        // Handles an array of DTOs
-        if (strpos($type, '[]') !== false) {
-            $type = str_replace('[]', '', $type);
-
-            return DataTransferObjectFactory::new()
-                ->dto($type)
-                ->random()
-                ->make();
-        }
-
-        // Handles a DTO Collection
-        if (
-            Validator::isDTOCollection($type) &&
-            $dtoClass = $this->extractCollectionReturnType($type)
-        ) {
-            return CollectionFactory::new()
-                ->collection($type)
-                ->of($dtoClass)
-                ->make();
-        }
-
-        // Handles a DTO
-        if (Validator::isDTO($type)) {
-            return DataTransferObjectFactory::new()
-                ->dto($type)
-                ->make();
-        }
-
+        // Generate one of our PHP default types.
         switch ($type) {
             case 'array':
-                return FakerMap::words();
+                return FakerMap::faker()->words();
             break;
 
             case 'bool':
-                return FakerMap::bool();
+                return FakerMap::faker()->boolean();
             break;
 
             case 'DateTime':
-                return FakerMap::dateTime();
+                return FakerMap::faker()->dateTime();
             break;
 
             case 'int':
-                return FakerMap::randomDigit();
+                return FakerMap::faker()->randomDigit();
             break;
 
             case 'float':
-                return FakerMap::randomFloat();
+                return FakerMap::faker()->randomFloat();
+            break;
+
+            case 'null':
+                return null;
             break;
         }
 
-        return FakerMap::word();
+        return FakerMap::faker()->word();
     }
 
-    protected function createPropertyOfRandomType()
+    public function getRandomType(): string
     {
-        $type = array_rand([
+        $types = array_merge(array_keys(static::$providers), [
             'array',
             'bool',
             'DateTime',
             'int',
             'float',
             'string',
-        ], 1);
+            'null',
+        ]);
 
-        return $this->createPropertyOfType($type);
+        return $types[array_rand($types, 1)];
     }
 }
