@@ -25,6 +25,7 @@ class PropertyFactoryTest extends TestCase
         $this->assertIsInt(PropertyFactory::new()->type('int')->make());
         $this->assertIsFloat(PropertyFactory::new()->type('float')->make());
         $this->assertIsString(PropertyFactory::new()->type('string')->make());
+        $this->assertNull(PropertyFactory::new()->type('null')->make());
         $this->assertTrue(
             PropertyFactory::new()->type('DateTime')->make() instanceof DateTime
         );
@@ -50,6 +51,7 @@ class PropertyFactoryTest extends TestCase
             is_int($result) ||
             is_float($result) ||
             is_string($result) ||
+            is_null($result) ||
             $result instanceof DateTime
         );
     }
