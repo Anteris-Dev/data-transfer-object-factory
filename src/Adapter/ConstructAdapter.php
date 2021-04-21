@@ -37,11 +37,7 @@ class ConstructAdapter implements AdapterInterface
             // types list.
             if (
                 ! in_array('null', $types) &&
-<<<<<<< HEAD
-                $parameter->getType()->allowsNull()
-=======
                 $parameter->getType()?->allowsNull()
->>>>>>> 4a4f992 (Fixes issue with no type specified.)
             ) {
                 array_push($types, 'null');
             }

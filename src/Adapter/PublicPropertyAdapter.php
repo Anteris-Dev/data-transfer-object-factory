@@ -31,7 +31,7 @@ class PublicPropertyAdapter implements AdapterInterface
             // types list.
             if (
                 ! in_array('null', $types) &&
-                $reflectionProperty->getType()->allowsNull()
+                $reflectionProperty->getType()?->allowsNull()
             ) {
                 array_push($types, 'null');
             }
