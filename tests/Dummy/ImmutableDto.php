@@ -9,7 +9,8 @@ class ImmutableDto
         private string $lastName,
         private string $email,
         private ?string $address
-    ) {}
+    ) {
+    }
 
     public function getFirstName(): string
     {

@@ -28,7 +28,7 @@ class ConstructAdapter implements AdapterInterface
     public function getProperties(ReflectionClass $class): PropertyCollection
     {
         $properties = new PropertyCollection;
-        $construct = $class->getConstructor();
+        $construct  = $class->getConstructor();
 
         foreach ($construct->getParameters() as $parameter) {
             $types = $this->getParameterTypes($parameter);
@@ -36,7 +36,7 @@ class ConstructAdapter implements AdapterInterface
             // Make sure properties that allow null values have "null" in their
             // types list.
             if (
-                !in_array('null', $types) &&
+                ! in_array('null', $types) &&
                 $parameter->getType()->allowsNull()
             ) {
                 array_push($types, 'null');
