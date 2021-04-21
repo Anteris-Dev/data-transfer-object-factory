@@ -3,6 +3,7 @@
 namespace Anteris\DataTransferObjectFactory;
 
 use Anteris\DataTransferObjectFactory\Adapter\AdapterInterface;
+use Anteris\DataTransferObjectFactory\Adapter\ConstructAdapter;
 use Anteris\DataTransferObjectFactory\Adapter\DataTransferObjectAdapter;
 use Anteris\DataTransferObjectFactory\Adapter\GetSetMethodAdapter;
 use Anteris\DataTransferObjectFactory\Adapter\PublicPropertyAdapter;
@@ -21,8 +22,6 @@ class Factory
 
     private static bool $booted = false;
 
-    private string $collectionClass;
-
     private int $count;
 
     private string $dataTransferObjectClass;
@@ -35,6 +34,7 @@ class Factory
             static::registerAdapter(new GetSetMethodAdapter);
             static::registerAdapter(new DataTransferObjectAdapter);
             static::registerAdapter(new PublicPropertyAdapter);
+            static::registerAdapter(new ConstructAdapter);
 
             static::$booted = true;
         }
