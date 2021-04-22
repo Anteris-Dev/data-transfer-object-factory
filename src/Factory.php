@@ -50,7 +50,7 @@ class Factory
         $factory = new static;
 
         if ($dto) {
-            $factory->dto($dto);
+            $factory = $factory->dto($dto);
         }
 
         return $factory;
@@ -58,9 +58,11 @@ class Factory
 
     public function count(int $count): static
     {
-        $this->count = $count;
+        $clone = clone $this;
 
-        return $this;
+        $clone->count = $count;
+
+        return $clone;
     }
 
     public function random(int $min = 3, int $max = 100): static
@@ -76,9 +78,11 @@ class Factory
             );
         }
 
-        $this->dataTransferObjectClass = $dataTransferObject;
+        $clone = clone $this;
 
-        return $this;
+        $clone->dataTransferObjectClass = $dataTransferObject;
+
+        return $clone;
     }
 
     public function sequence(...$sequence): static
@@ -92,18 +96,22 @@ class Factory
             $state = fn () => $state;
         }
 
-        $this->states[] = $state;
+        $clone = clone $this;
 
-        return $this;
+        $clone->states[] = $state;
+
+        return $clone;
     }
 
     public function states(array $states): static
     {
+        $clone = clone $this;
+
         foreach ($states as $state) {
-            $this->state($state);
+            $clone = $clone->state($state);
         }
 
-        return $this;
+        return $clone;
     }
 
     public function make(array $attributes = [])
