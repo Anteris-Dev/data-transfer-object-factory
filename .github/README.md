@@ -59,6 +59,28 @@ Factory::dto(PersonData::class)
 ```
 
 ## Extending
+
+### Adapters
+Adapters instruct the factory on how to retrieve properties for a specific type of class. Adapters must implement the `Anteris\DataTransferObjectFactory\Adapter\AdapterInterface` which requires the following methods.
+
+- `handles(ReflectionClass $class)` - _Returns a bool if the adapter can handle the referenced reflection class._
+- `getProperties(ReflectionClass $class)` - _Returns a collection of properties found on the referenced reflection class._
+- `createClass(ReflectionClass $class, PropertyCollection $collection)` - _Creates and returns and instance of the reflection class using the properties passed._
+
+To register an adapter on the factory, call its static `registerAdapter()` method. For example:
+
+```php
+
+use Anteris\DataTransferObjectFactory\Factory;
+
+Factory::registerAdapter(new MyCustomAdapter);
+
+```
+
+For more information check out the `Adapter` directory in the source code.
+
+### Property Types
+
 It used to be that you had to extend the factory class to utilize custom types. You can now do so through the static `registerProvider()` method on the `PropertyFactory` class. This method takes two arguments. The first should be the FQDN of the class you are providing (e.g. `Carbon\Carbon`) OR the built-in type (e.g. `string`). The second should be a callback that returns the generated value. This callback is passed two properties when called to assist in generating the value. The first is an instance of `Anteris\FakerMap\FakerMap` which can be used to help generate fake data. The second is the name of the property being generated or null if not provided.
 
 For example, to support Carbon:

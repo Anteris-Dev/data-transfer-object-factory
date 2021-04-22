@@ -1,21 +1,18 @@
 # Changelog
-All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
-## [1.0.0] - 2021-01-21
+## [1.0.0] - 2021-01-22
 
 ## Added
 - Support for smart generation of properties. Faker will guess the type of data to be populated based on the property name (e.g. homeAddress property is populated with an address).
 - Support for states.
 - Support for sequences.
 - Support for PHP 8.
+- Support for the latest version of Spatie DTOs.
 
 ## Changed
-- The factory API to be more fluent
+- The factory API to be more fluent.
 - The entry point to the `Anteris\DataTransferObjectFactory\Factory` class.
-- Extensions to the generator are made through `PropertyFactory::registerProvider()`
+- Extensions to the property type generator are made through `PropertyFactory::registerProvider()`
 
 ## Removed
 - Support for PHP 7.4.
