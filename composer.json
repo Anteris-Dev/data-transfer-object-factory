@@ -27,7 +27,6 @@
         "friendsofphp/php-cs-fixer": "^2.0",
         "phpunit/phpunit": "^9.0",
         "spatie/data-transfer-object": "^3.0",
-        "spatie/ray": "^1.0",
         "vimeo/psalm": "^4.0"
     },
     "scripts": {
