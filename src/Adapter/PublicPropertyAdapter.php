@@ -48,7 +48,7 @@ class PublicPropertyAdapter implements AdapterInterface
     public function createClass(
         ReflectionClass $class,
         PropertyCollection $properties
-    ) {
+    ): object {
         $instance = $class->newInstance();
 
         foreach ($properties as $property) {

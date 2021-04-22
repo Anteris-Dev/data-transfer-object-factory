@@ -23,5 +23,5 @@ interface AdapterInterface
      * Creates and returns an instance of the class being reflected with the
      * generated properties attached to it.
      */
-    public function createClass(ReflectionClass $class, PropertyCollection $properties);
+    public function createClass(ReflectionClass $class, PropertyCollection $properties): object;
 }

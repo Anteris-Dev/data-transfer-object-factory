@@ -51,7 +51,7 @@ class ConstructAdapter implements AdapterInterface
         return $properties;
     }
 
-    public function createClass(ReflectionClass $class, PropertyCollection $properties)
+    public function createClass(ReflectionClass $class, PropertyCollection $properties): object
     {
         $propertiesAndValues = [];
 

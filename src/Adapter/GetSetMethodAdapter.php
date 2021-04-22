@@ -50,7 +50,7 @@ class GetSetMethodAdapter implements AdapterInterface
         return $properties;
     }
 
-    public function createClass(ReflectionClass $class, PropertyCollection $properties)
+    public function createClass(ReflectionClass $class, PropertyCollection $properties): object
     {
         $instance = $class->newInstance();
 
