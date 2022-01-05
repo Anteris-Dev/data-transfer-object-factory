@@ -3,6 +3,7 @@
 namespace Anteris\DataTransferObjectFactory\Adapter;
 
 use Anteris\DataTransferObjectFactory\Data\PropertyCollection;
+use Anteris\DataTransferObjectFactory\Data\PropertyData;
 use ReflectionClass;
 
 class DataTransferObjectAdapter extends PublicPropertyAdapter
@@ -21,9 +22,24 @@ class DataTransferObjectAdapter extends PublicPropertyAdapter
         $propertiesAndValues = [];
 
         foreach ($properties as $property) {
-            $propertiesAndValues[$property->name] = $property->value;
+            $propertyName = $this->getPropertyName($class, $property);
+
+            $propertiesAndValues[$propertyName] = $property->value;
         }
 
         return $class->newInstanceArgs($propertiesAndValues);
+    }
+
+    private function getPropertyName(ReflectionClass $class, PropertyData $property): string
+    {
+        $attributes = $class->getProperty($property->name)->getAttributes();
+
+        foreach ($attributes as $attribute) {
+            if ($attribute->getName() === \Spatie\DataTransferObject\Attributes\MapFrom::class) {
+                return $attribute->getArguments()[0];
+            }
+        }
+
+        return $property->name;
     }
 }
