@@ -7,6 +7,7 @@ use Anteris\DataTransferObjectFactory\Data\PropertyCollection;
 use Anteris\DataTransferObjectFactory\Data\PropertyData;
 use Anteris\Tests\DataTransferObjectFactory\Dummy\PhpDto;
 use Anteris\Tests\DataTransferObjectFactory\Dummy\SpatieDto;
+use Anteris\Tests\DataTransferObjectFactory\Dummy\SpatieMappedDto;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -43,6 +44,20 @@ class DataTransferObjectAdapterTest extends TestCase
         $this->assertSame('Casey', $dto->lastName);
         $this->assertSame('aidan.casey@example.com', $dto->email);
         $this->assertSame('123 Test Ave.', $dto->address);
+    }
+
+    public function test_it_can_create_class_with_mapped_properties()
+    {
+        $adapter = new DataTransferObjectAdapter;
+
+        $propertiesNeeded = new PropertyCollection([
+            new PropertyData('firstName', ['string'], 'Aidan'),
+        ]);
+
+        $dto = $adapter->createClass(new ReflectionClass(SpatieMappedDto::class), $propertiesNeeded);
+
+        $this->assertInstanceOf(SpatieMappedDto::class, $dto);
+        $this->assertSame('Aidan', $dto->firstName);
     }
 
     public function test_it_can_get_properties()
