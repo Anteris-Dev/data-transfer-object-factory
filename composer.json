@@ -27,7 +27,7 @@
         "friendsofphp/php-cs-fixer": "^2.0",
         "phpunit/phpunit": "^9.0",
         "spatie/data-transfer-object": "^3.0",
-        "vimeo/psalm": "^4.0"
+        "vimeo/psalm": "^5.8"
     },
     "scripts": {
         "fix": "./vendor/bin/php-cs-fixer fix --allow-risky=yes",
